@@ -7,7 +7,7 @@
 a,
 a:focus,
 a:hover {
-    color: #fff;
+    color: black;
 }
 /* Custom default button */
 
@@ -17,8 +17,8 @@ a:hover {
     color: #333;
     text-shadow: none;
     /* Prevent inheritence from `body` */
-    background-color: #fff;
-    border: 1px solid #fff;
+    background-color: white;
+    border: 1px solid #333;
 }
 /*
  * Base structure
@@ -28,11 +28,11 @@ html {
 }
 html,
 body {
-    background-color: #333;
+    background-color: white;
 }
 body {
     min-height: 100%;
-    color: #fff;
+    color: #222;
     text-align: center;
     text-shadow: 0 1px 3px rgba(0, 0, 0, .5);
 }
@@ -45,8 +45,6 @@ body {
     height: 100vh;
     /* For at least Firefox */
     min-height: 100%;
-    -webkit-box-shadow: inset 0 0 100px rgba(0, 0, 0, .5);
-    box-shadow: inset 0 0 100px rgba(0, 0, 0, .5);
 }
 .site-wrapper-inner {
     display: table-cell;
@@ -96,9 +94,7 @@ body {
     padding-left: 0;
     font-size: 16px;
     font-weight: bold;
-    color: #fff;
-    /* IE8 proofing */
-    color: rgba(255, 255, 255, .75);
+    color: gray;
     border-bottom: 2px solid transparent;
 }
 .masthead-nav > li > a:hover,
@@ -110,8 +106,8 @@ body {
 .masthead-nav > .active > a,
 .masthead-nav > .active > a:hover,
 .masthead-nav > .active > a:focus {
-    color: #fff;
-    border-bottom-color: #fff;
+    color: black;
+    border-bottom-color: black;
 }
 @media (min-width: 768px) {
     .masthead-brand {
@@ -140,9 +136,7 @@ body {
  */
 
 .mastfoot {
-    color: #999;
-    /* IE8 proofing */
-    color: rgba(255, 255, 255, .5);
+    color: gray;
 }
 /*
  * Affix and center
@@ -242,12 +236,12 @@ input {
     padding: 5px 25px;
     margin: 10px 0;
     background: white;
-    border-radius: 5px;
     color: black;
     text-shadow: none;
     min-height: 134px;
     display: table;
     min-width: 100%;
+    border: 1px solid black;
 }
 .list li .item .content {
     display: table-cell;
@@ -354,12 +348,6 @@ input {
     color: white;
 }
 
-.screenshot {
-    margin: 30px auto;
-    width: 100%;
-    border-radius: 3px;
-}
-
 select {
     color: black;
 }
@@ -371,4 +359,12 @@ select {
     .ui-use-tags {
         max-width: 100%;
     }
+}
+
+.btn {
+    border-radius: 0 !important;
+}
+.form-control {
+    border-radius: 0;
+    border-color: #333;
 }
