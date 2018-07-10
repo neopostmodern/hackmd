@@ -1,5 +1,5 @@
 node_modules
-bower_components
+package-lock.json
 composer.phar
 composer.lock
 .env.*.php
@@ -19,7 +19,6 @@ backups/
 
 # ignore config files
 config.json
-public/js/config.js
 .sequelizerc
 
 # ignore webpack build

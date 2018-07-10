@@ -1,132 +1,139 @@
-require('../css/extra.css');
-require('../css/site.css');
+/* eslint-env browser, jquery */
+/* global serverurl, Reveal, RevealMarkdown */
 
-var extraModule = require('./extra');
-var md = extraModule.md;
-var updateLastChange = extraModule.updateLastChange;
-var finishView = extraModule.finishView;
+require('../css/extra.css')
+require('../css/site.css')
 
-var preventXSS = require('./render').preventXSS;
+import { preventXSS } from './render'
+import { md, updateLastChange, removeDOMEvents, finishView } from './extra'
 
-var body = $(".slides").text();
+const body = preventXSS($('.slides').text())
 
-createtime = lastchangeui.time.attr('data-createtime');
-lastchangetime = lastchangeui.time.attr('data-updatetime');
-updateLastChange();
-var url = window.location.pathname;
-$('.ui-edit').attr('href', url + '/edit');
+window.createtime = window.lastchangeui.time.attr('data-createtime')
+window.lastchangetime = window.lastchangeui.time.attr('data-updatetime')
+updateLastChange()
+const url = window.location.pathname
+$('.ui-edit').attr('href', `${url}/edit`)
+$('.ui-print').attr('href', `${url}?print-pdf`)
 
-$(document).ready(function () {
-    //tooltip
-    $('[data-toggle="tooltip"]').tooltip();
-});
+$(document).ready(() => {
+    // tooltip
+  $('[data-toggle="tooltip"]').tooltip()
+})
 
-function extend() {
-    var target = {};
-    for (var i = 0; i < arguments.length; i++) {
-        var source = arguments[i];
-        for (var key in source) {
-            if (source.hasOwnProperty(key)) {
-                target[key] = source[key];
-            }
-        }
+function extend () {
+  const target = {}
+
+  for (const source of arguments) {
+    for (const key in source) {
+      if (source.hasOwnProperty(key)) {
+        target[key] = source[key]
+      }
     }
-    return target;
+  }
+
+  return target
 }
 
 // Optional libraries used to extend on reveal.js
-var deps = [{
-    src: serverurl + '/build/reveal.js/lib/js/classList.js',
-    condition: function() {
-        return !document.body.classList;
-    }
+const deps = [{
+  src: `${serverurl}/build/reveal.js/lib/js/classList.js`,
+  condition () {
+    return !document.body.classList
+  }
 }, {
-    src: serverurl + '/js/reveal-markdown.js',
-    callback: function () {
-        var slideOptions = {
-            separator: '^(\r\n?|\n)---(\r\n?|\n)$',
-            verticalSeparator: '^(\r\n?|\n)----(\r\n?|\n)$'
-        };
-        var slides = RevealMarkdown.slidify(body, slideOptions);
-        $(".slides").html(slides);
-        RevealMarkdown.initialize();
-        $(".slides").show();
-    }
-}, {
-    src: serverurl + '/build/reveal.js/plugin/notes/notes.js',
-    async: true,
-    condition: function() {
-        return !!document.body.classList;
-    }
-}];
+  src: `${serverurl}/build/reveal.js/plugin/notes/notes.js`,
+  async: true,
+  condition () {
+    return !!document.body.classList
+  }
+}]
+
+const slideOptions = {
+  separator: '^(\r\n?|\n)---(\r\n?|\n)$',
+  verticalSeparator: '^(\r\n?|\n)----(\r\n?|\n)$'
+}
+const slides = RevealMarkdown.slidify(body, slideOptions)
+$('.slides').html(slides)
+RevealMarkdown.initialize()
+removeDOMEvents($('.slides'))
+$('.slides').show()
 
 // default options to init reveal.js
-var defaultOptions = {
-    controls: true,
-    progress: true,
-    slideNumber: true,
-    history: true,
-    center: true,
-    transition: 'none',
-    dependencies: deps
-};
+const defaultOptions = {
+  controls: true,
+  progress: true,
+  slideNumber: true,
+  history: true,
+  center: true,
+  transition: 'none',
+  dependencies: deps
+}
 
 // options from yaml meta
-var meta = JSON.parse($("#meta").text());
-var options = meta.slideOptions || {};
+const meta = JSON.parse($('#meta').text())
+var options = meta.slideOptions || {}
 
-var view = $('.reveal');
+const view = $('.reveal')
 
-//text language
-if (meta.lang && typeof meta.lang == "string") {
-    view.attr('lang', meta.lang);
+// text language
+if (meta.lang && typeof meta.lang === 'string') {
+  view.attr('lang', meta.lang)
 } else {
-    view.removeAttr('lang');
+  view.removeAttr('lang')
 }
-//text direction
-if (meta.dir && typeof meta.dir == "string" && meta.dir == "rtl") {
-    options.rtl = true;
+// text direction
+if (meta.dir && typeof meta.dir === 'string' && meta.dir === 'rtl') {
+  options.rtl = true
 } else {
-    options.rtl = false;
+  options.rtl = false
 }
-//breaks
+// breaks
 if (typeof meta.breaks === 'boolean' && !meta.breaks) {
-    md.options.breaks = false;
+  md.options.breaks = false
 } else {
-    md.options.breaks = true;
+  md.options.breaks = true
 }
 
 // options from URL query string
-var queryOptions = Reveal.getQueryHash() || {};
+const queryOptions = Reveal.getQueryHash() || {}
 
-var options = extend(defaultOptions, options, queryOptions);
-Reveal.initialize(options);
+options = extend(defaultOptions, options, queryOptions)
+Reveal.initialize(options)
 
-window.viewAjaxCallback = function () {
-    Reveal.layout();
-};
-
-function renderSlide(event) {
-    var markdown = $(event.currentSlide);
-    if (!markdown.attr('data-rendered')) {
-        var title = document.title;
-        finishView(markdown);
-        markdown.attr('data-rendered', 'true');
-        document.title = title;
-        Reveal.layout();
-    }
+window.viewAjaxCallback = () => {
+  Reveal.layout()
 }
 
-Reveal.addEventListener('ready', function (event) {
-    renderSlide(event);
-    var markdown = $(event.currentSlide);
+function renderSlide (event) {
+  if (window.location.search.match(/print-pdf/gi)) {
+    const slides = $('.slides')
+    let title = document.title
+    finishView(slides)
+    document.title = title
+    Reveal.layout()
+  } else {
+    const markdown = $(event.currentSlide)
+    if (!markdown.attr('data-rendered')) {
+      let title = document.title
+      finishView(markdown)
+      markdown.attr('data-rendered', 'true')
+      document.title = title
+      Reveal.layout()
+    }
+  }
+}
+
+Reveal.addEventListener('ready', event => {
+  renderSlide(event)
+  const markdown = $(event.currentSlide)
     // force browser redraw
-    setTimeout(function () {
-        markdown.hide().show(0);
-    }, 0);
-});
-Reveal.addEventListener('slidechanged', renderSlide);
+  setTimeout(() => {
+    markdown.hide().show(0)
+  }, 0)
+})
+Reveal.addEventListener('slidechanged', renderSlide)
 
-var isMacLike = navigator.platform.match(/(Mac|iPhone|iPod|iPad)/i) ? true : false;
+const isWinLike = navigator.platform.indexOf('Win') > -1
 
-if (!isMacLike) $('.container').addClass('hidescrollbar');
+if (isWinLike) $('.container').addClass('hidescrollbar')

@@ -3,13 +3,12 @@ Features
 
 Introduction
 ===
-<i class="fa fa-file-text"></i> **HackMD** is a realtime, multiplatform collaborative markdown note editor.
+<i class="fa fa-file-text"></i> **CodiMD** is a real-time, multi-platform collaborative markdown note editor.
 This means that you can write notes with other people on your **desktop**, **tablet** or even on the **phone**.
-You can sign-in via **Facebook**, **Twitter**, **GitHub**, or **Dropbox** in the [_homepage_](/).
+You can sign-in via multiple auth providers like **Facebook**, **Twitter**, **GitHub** and many more on the [_homepage_](/).
 
-Note that this service is still in an early stage, and thus still has some [_issues_](https://github.com/hackmdio/hackmd/issues?q=is%3Aopen+is%3Aissue+label%3Abug).
-Please report new issues in [GitHub](https://github.com/hackmdio/hackmd/issues/new).
-If you need instant help, please send us a [Facebook message](https://www.facebook.com/messages/866415986748945).
+If you experience any _issues_, feel free to report it on [**GitHub**](https://github.com/hackmdio/codimd/issues).
+Or meet us on [**Matrix.org**](https://riot.im/app/#/room/#codimd:matrix.org) or [**Gitter**](https://gitter.im/hackmdio/hackmd) for dev-talk and interactive help.
 **Thank you very much!**
 
 Workspace
@@ -26,15 +25,20 @@ Workspace
 <i class="fa fa-toggle-on fa-fw"></i> View: See only the result.
 <i class="fa fa-toggle-off fa-fw"></i> Edit: See only the editor.
 
+## Night Mode:
+When you are tired of a white screen and like a night mode, click on the little moon <i class="fa fa-moon-o"></i> and turn on the night view of CodiMD.
+
+The editor view, which is in night mode by default, can also be toggled between night and day view using the the little sun<i class="fa fa-sun-o fa-fw"></i>.
+
 ## Image Upload:
 You can upload an image simply by clicking on the camera button <i class="fa fa-camera"></i>.
 Alternatively, you can **drag-n-drop** an image into the editor. Even **pasting** images is possible!
-This will automatically upload the image to **[imgur](http://imgur.com)**, nothing to worry. :tada:
-![](https://i.imgur.com/9cgQVqD.png)
+This will automatically upload the image to **[imgur](http://imgur.com)**, **[Amazon S3](https://aws.amazon.com/s3/)**, **[Minio](https://minio.io)** or **local filesystem**, nothing to worry about. :tada:
+![imgur](https://i.imgur.com/9cgQVqD.png)
 
 ## Share Notes:
 If you want to share an **editable** note, just copy the URL.
-If you want to share a **read-only** note, simply press share button <i class="fa fa-share-alt"></i> and copy the URL.
+If you want to share a **read-only** note, simply press publish button <i class="fa fa-share-square-o"></i> and copy the URL.
 
 ## Save a Note:
 Currently, you can save to **Dropbox** <i class="fa fa-dropbox"></i> or save an `.md` file <i class="fa fa-file-text"></i> locally.
@@ -47,10 +51,15 @@ or import content from your **clipboard** <i class="fa fa-clipboard"></i>, and t
 It is possible to change the access permission to a note through the little button on the top right of the view.
 There are four possible options:
 
-<i class="fa fa-leaf fa-fw"></i> **Freely**: Anyone can edit this note.
-<i class="fa fa-pencil fa-fw"></i> **Editable**: A signed-in user can edit this note.
-<i class="fa fa-lock fa-fw"></i> **Locked**: Only the owner can edit this note.
-<i class="fa fa-hand-stop-o fa-fw"></i> **Private**: Only the owner can view and edit this note.
+|                              |Owner read/write|Signed-in read|Signed-in write|Guest read|Guest write|
+|:-----------------------------|:--------------:|:------------:|:-------------:|:--------:|:---------:|
+|<span class="text-nowrap"><i class="fa fa-leaf fa-fw"></i> **Freely**</span>               |✔|✔|✔|✔|✔|
+|<span class="text-nowrap"><i class="fa fa-pencil fa-fw"></i> **Editable**</span>           |✔|✔|✔|✔|✖|
+|<span class="text-nowrap"><i class="fa fa-id-card fa-fw"></i> **Limited**</span>           |✔|✔|✔|✖|✖|
+|<span class="text-nowrap"><i class="fa fa-lock fa-fw"></i> **Locked**</span>               |✔|✔|✖|✔|✖|
+|<span class="text-nowrap"><i class="fa fa-umbrella fa-fw"></i> **Protected**</span>        |✔|✔|✖|✖|✖|
+|<span class="text-nowrap"><i class="fa fa-hand-stop-o fa-fw"></i> **Private**</span>       |✔|✖|✖|✖|✖|
+
 
 **Only the owner of the note can change the note's permissions.**
 
@@ -132,7 +141,7 @@ alert(s);
 function $initHighlight(block, cls) {
   try {
     if (cls.search(/\bno\-highlight\b/) != -1)
-      return process(block, true, 0x0F) + 
+      return process(block, true, 0x0F) +
              ' class=""';
   } catch (e) {
     /* handle exception */
@@ -152,7 +161,7 @@ alert(s);
 function $initHighlight(block, cls) {
   try {
     if (cls.search(/\bno\-highlight\b/) != -1)
-      return process(block, true, 0x0F) + 
+      return process(block, true, 0x0F) +
              ' class=""';
   } catch (e) {
     /* handle exception */
@@ -254,7 +263,7 @@ cond(no)->op2
 digraph hierarchy {
 
                 nodesep=1.0 // increases the separation between nodes
-                
+
                 node [color=Red,fontname=Courier,shape=box] //All nodes will this shape and colour
                 edge [color=Blue, style=dashed] //All the lines look like this
 
@@ -278,10 +287,24 @@ gantt
     anther task      : 24d
 ```
 
+### Abc
+```abc
+X:1
+T:Speed the Plough
+M:4/4
+C:Trad.
+K:G
+|:GABc dedB|dedB dedB|c2ec B2dB|c2A2 A2BA|
+GABc dedB|dedB dedB|c2ec B2dB|A2F2 G4:|
+|:g2gf gdBd|g2f2 e2d2|c2ec B2dB|c2A2 A2df|
+g2gf g2Bd|g2f2 e2d2|c2ec B2dB|A2F2 G4:|
+```
+
 > More information about **sequence diagrams** syntax [here](http://bramp.github.io/js-sequence-diagrams/).
 > More information about **flow charts** syntax [here](http://adrai.github.io/flowchart.js/).
 > More information about **graphviz** syntax [here](http://www.tonyballantyne.com/graphs.html)
 > More information about **mermaid** syntax [here](http://knsv.github.io/mermaid)
+> More information about **abc** syntax [here](http://abcnotation.com/learn)
 
 Alert Area
 ---
@@ -367,7 +390,7 @@ Subscript: H~2~O
 
 > Blockquotes can also be nested...
 >> ...by using additional greater-than signs right next to each other...
-> > > ...or with spaces between arrows. 
+> > > ...or with spaces between arrows.
 
 
 ### Lists

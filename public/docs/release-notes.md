@@ -1,6 +1,326 @@
 Release Notes
 ===
 
+<i class="fa fa-tag"></i> 1.2.0 <i class="fa fa-clock-o"></i> 2018-06-28 00:00
+---
+
+### Announcement
+* HackMD CE is renamed to CodiMD to prevent confusion. [For details see here](https://github.com/hackmdio/codimd#hackmd-ce-became-codimd)
+
+### Enhancements
+* Show full title by hovering over to table of contents entries
+* Add generic OAUTH2 support for authentication
+* Redirect unauthenticated user to login page on "forbidden" pages
+* Add ability to add ToS and privacy documents without code changes
+* Add account deletion as part of user self-management
+* Add download of all own notes
+* Add privacy policy example (no legal advice)
+* Increase checkbox size on slides
+* Add support for Azure blob storage for image uploads
+* Add Korean translation
+* Add note about official K8s chart for deployment
+* Add toolbar for markdown shortcuts in editor
+* Add ability to disable Gravatar integration
+* Add print icon to slide menu which leads to the print view.
+* Add sequelize to setup instructions
+* Update various packages
+
+### Fixes
+* Fix local writes for non-existing translations in production
+* Fix wrong documentation about default image upload type
+* Fix possible error if CodiMD is started with wrong working directory
+* Fix issues caused by cached/cacheeable client config
+* Fix issues caused by notes created via curl/API with CRLF line endings
+* Fix broken images for downloaded PDFs while using `filesystem` as `imageUploadType`
+* Fix Unicode URLs when using `allowFreeURL=true`
+
+### Refactors
+* Split auth documentation into multiple documents
+
+### Removes
+* Remove polyfill for `useCDN=false` setups
+* Remove unused and no longer needed symlink from translations
+
+### Honorable mentions
+* [Adam Hoka (ahoka)](https://github.com/ahoka)
+* [Edgar Z. Alvarenga (aivuk)](https://github.com/aivuk)
+* [Jacob Burden (jekrb)](https://github.com/jekrb)
+* [Pedro Ferreira (pferreir)](https://github.com/pferreir)
+* [TC Liu (liuderchi)](https://github.com/liuderchi)
+
+
+<i class="fa fa-tag"></i> 1.1.1-ce <i class="fa fa-clock-o"></i> 2018-05-23 12:00
+---
+
+### Security
+* Fix Google Drive integration leaked `clientSecret` for Google integration
+* Update base64url package
+
+### Fixes
+* Fix typos in integrations
+* Fix high need of file descriptors during build
+* Fix heroku deployment by limiting node version to <10.x
+
+### Refactors
+* Refactor letterAvatars to be compliant with CSP
+
+### Removes
+* Google Drive integration
+
+### Honorable mentions
+* [Max Wu (jackycute)](https://github.com/jackycute)
+
+<i class="fa fa-tag"></i> 1.1.0-ce <i class="fa fa-clock-o"></i> 2018-04-06 12:00
+---
+
+### Security
+* Adding CSP headers
+* Prevent data-leak by wrong LDAP config
+* Generate dynamic `sessionSecret` if none is specified
+
+### Enhancements
+* Add Minio support
+* Allow posting content to new notes by API
+* Add anonymous edit function in restricted mode
+* Add support for more Mimetypes on S3, Minio and local filesystem uploads
+* Add basic CLI tooling for local user management
+* Add referrer policy
+* Add more usable HTML5 tags
+* Add `useridField` in LDAP config
+* Add option for ReportURI for CSP violations
+* Add persistance for night mode
+* Allow setting of `sessionSecret` by environment variable
+* Add night mode to features page
+* Add Riot / Matrix - Community link to help page
+
+### Fixes
+* Fix ToDo-toggle function
+* Fix LDAP provider name in front-end
+* Fix errors on authenticated sessions for deleted users
+* Fix typo in database migration
+* Fix possible data truncation of authorship
+* Minor fixes in README.md
+* Allow usage of ESC-key by codemirror
+* Fix array of emails in LDAP
+* Fix type errors by environment configs
+* Fix error message on some file API errors
+* Fix minor CSS issues in night mode
+
+### Refactors
+* Refactor contact
+* Refactor social media integration on main page
+* Refactor socket.io code to no longer use referrer
+* Refactor webpack config to need less dependencies in package.json
+* Refactor imageRouter for modularity
+* Refactor configs to be camel case
+
+### Removes
+* Remove unused `tokenSecret` from LDAP config
+
+### Deprecations
+* All non-camelcase config
+
+### Honorable mentions
+* [Dario Ernst (Nebukadneza)](https://github.com/Nebukadneza)
+* [David Mehren (davidmehren)](https://github.com/davidmehren)
+* [Dustin Frisch (fooker)](https://github.com/fooker)
+* [Felix Schäfer (thegcat)](https://github.com/thegcat)
+* [Literallie (xxyy)](https://github.com/xxyy)
+* [Marc Deop (marcdeop)](https://github.com/marcdeop)
+* [Max Wu (jackycute)](https://github.com/jackycute)
+* [Robin Naundorf (senk)](https://github.com/senk)
+* [Stefan Bühler (stbuehler)](https://github.com/stbuehler)
+* [Takeaki Matsumoto (takmatsu)](https://github.com/takmatsu)
+* [Tang TsungYi (vazontang)](https://github.com/vazontang)
+* [Zearin (Zearin)](https://github.com/Zearin)
+
+<i class="fa fa-tag"></i> 1.0.1-ce <i class="fa fa-clock-o"></i> 2018-01-19 15:00
+---
+
+### Security
+* Fix Dropbox client secret leak
+
+### Enhancements
+* Improve version handling
+* It's 2018!
+
+### Fixes
+* Fix image alt-tag rendering
+* Fix Dropbox appkey
+
+<i class="fa fa-tag"></i> 1.0.0-ce <i class="fa fa-clock-o"></i> 2018-01-18 12:00
+---
+### License
+* Switch from MIT to AGPL
+
+### Enhancements
+* Improve language support
+* Allow themes for reveal
+* Add dark theme for editor and view
+* Add danish translation
+* Add simplified chinese translation
+* Provide new permission table
+* Make HSTS configurable
+* Make PDF export configurable
+* Add Mattermost auth support
+* Add SAML support
+
+### Fixes
+* Fix regex for speaker notes
+* Fix S3 endpoint support
+* Fix German translation
+* Fix English translation
+* Fix broken profile images
+* Fix XSS attacks
+* Fix history order
+* Fix missing boolean settings
+* Fix LDAP auth
+* Fix too long notes droping content
+* Fix mermaid compatiblity with new version
+* Fix SSL CA path parsing
+
+### Refactors
+* Refactor main page
+* Refactor status pages
+* Refactor config handling
+* Refactor auth backend
+* Refactor code styling
+* Refactor middleware to modules
+
+<i class="fa fa-tag"></i> 0.5.1 `Doppio` <i class="fa fa-clock-o"></i> 2017-03-23 00:20
+---
+### Enhancements
+* Update to indicate version in status API header
+* Update to generate front-end constants on server startup
+* Update to add gitlab api scope option and auto adapt gitlab snippet feature on it
+* Update to add default permission config option
+* Update to add basics for secret management by Docker 1.13
+* Update webpack config to use parallel uglify plugin to speed up production build
+* Update realtime to use timer to avoid memory leaks on busy tick
+* Update to remove history cache to lower application coupling
+* Update to add screenshot on index page
+* Update index layout to add profile on navbar
+* Update to support allow email register option
+* Update to support disable anonymous view option
+* Update to add limited and protected permission
+* Update to allow displaying LDAP provider name on sign-in modal
+* Update to show yaml-metadata and diagram parsing error in the view
+
+### Fixes
+* Fix XSS vulnerability in link regex [Security Issue]
+* Fix todo list item class might add in wrong element
+* Fix pagination error in list.js over v1.5.0
+* Fix update doc from filesystem cause redundant authorship stringify
+* Fix export html to replace fallen cdn tortue.me to cdnjs
+* Fix rendering might result XSS attribute on self closing tag [Security Issue]
+* Fix out of sync when deleting on same cursor position on several clients
+* Fix not determine OT have pending operations properly
+* Fix to keep selections on save and restore info
+* Fix image path problem when using filesystem backend
+* Fix meta error not clear on before rendering
+* Fix duplicated headers anchor link not been updated properly
+* Fix checkLoginStateChanged might fall into infinite loop while calling loginStateChangeEvent
+* Fix to workaround text shadow for font antialias might cause cut off in Edge
+* Fix and refactor extracting content using metaMarked directly might lead in invalid object
+
+### Refactors
+* Refactor editor related code
+* Refactor code with JavaScript Standard Style
+* Refactor templates, partials and rearrange its path
+* Refactor front-end code with more modular concepts
+* Refactor front-end code using ES6 (also unify configs to `config.json`)
+
+### Removes
+- Removed UTF-8 BOM in download function
+
+<i class="fa fa-tag"></i> 0.5.0 `Ristretto` <i class="fa fa-clock-o"></i> 2017-01-02 02:35
+---
+### Enhancements
+* Update year to 2017 (Happy New Year!)
+* Update to improve editor performance by debounce checkEditorScrollbar event
+* Refactor data processing to model definition
+* Update to remove null byte on editor changes
+* Update to remove null byte before saving to DB
+* Update to support Esperanto locale
+* Little improvements (typos, uppercase + accents, better case) for French locale
+* Update features.md publish button name and icon
+
+### Fixes
+* Fix authorship might losing update event because of throttling
+* Fix migration script of revision lacks of definition of primary key
+* Fix to not use diff_cleanupSemantic
+* Fix URL concatenation when uploading images to local filesystem
+* Fix js-url not import correctly
+* Fixed typo: anonmyous
+* Fix codemirror spell checker not considering abbreviation which contain apostrophe in word
+* Fix possible user is undefined in realtime events
+* Fix wrong package name reference in webpack config for bootstrap-validator
+* Fix email option in config not parse correctly
+* Fix mathjax not able to render issue
+
+### Removes
+- Remove LZString compression for data storage
+- Remove LZString compression for some socket.io event data
+
+<i class="fa fa-tag"></i> 0.4.6 `Melya` <i class="fa fa-clock-o"></i> 2016-12-19 17:20
+---
+### Features
++ Add support of allow free url config option
++ Add support of allow anonymous config option
++ Add preferences to editor status bar and add allow override browser keymap option
++ Add support of s3 and local filesystem for image uploading
++ Add of support optional email register and signin
++ Use uWebSocket to improve websocket performance
++ Use CDNJS by default with https and SRI support
++ Use Webpack to bundle frontend code
+
+### Enhancements
+* Update to make TOC syntax be case-insensitive
+* Update to handle request with invalid uri
+* Update to auto generate meta description based on content in publish note and slide
+* Update to support haskell, go, typescript and jsx syntax highlighting in code block
+* Update to use workers to leverage intensive work loading
+* Update to support summary tag
+* Change use cdn config option default to be true
+* Update to retry when anytime the socket io disconnect
+* Change to raise socket io timeout, heartbeat interval and timeout to lower offline period
+* Update emoji parser using markdown-it-emoji instead of emojify
+* Optimize finishView selector performance by avoid universal selector
+* Config heroku deployment
+* Update to support Hindi, Swedish locale
+* Update to support wrap syntax for code block
+* Update to support pagination for history list
+
+### Fixes
+* Fix slide mode on print pdf not finish view rendering
+* Fix when server have heavy loading cache might not update to db properly
+* Fix redirection to url without trailing slashes not considering about config urlpath
+* Fix header id and text might affects by mathjax tags
+* Fix possible meta XSS in history list [Security Issue]
+* Fix possible XSS in yaml-metadata and turn using ejs escape syntax than external lib [Security Issue]
+* Fix to allow data attribute of section tag in slide
+* Fix slide might able to add unsafe attribute on section tag which cause XSS [Security Issue]
+* Fix slide might trigger script when processing markdown which cause XSS [Security Issue]
+* Fix published note won't scroll to hash on load
+* Fix mathjax with blockquote might have race condition
+* Fix server reconnect might not resend pending operations
+* Fix slide export pdf styles not applied issue
+* Fix possible unclose HTML and leaked html tags when fail to parse diagrams
+* Fix typos in the `slide-example.md`
+* Fix socket io doc event should setDoc when revision mismatch and no outstanding operation
+* Fix markdown styles conflicting bootstrap on p and ul under alert area
+* Fix finishView mermaid might select and replace whole markdown-body issue
+* Fix code block which in deeper level will not be parsed issue
+* Fix code block highlighting html not escaped when no languages specified
+* Fix client socket on delete event might not delete corresponding history record correctly
+* Fix to handle name or color is undefined error
+* Fix history item event not bind properly on pagination change
+* Fix history time should save in UNIX timestamp to avoid time offset issue
+
+### Removes
+- Drop bower the package manager
+- Remove auto linkify image
+
 <i class="fa fa-tag"></i> 0.4.5 `latte` <i class="fa fa-clock-o"></i> 2016-10-11 01:22
 ---
 ### Features
@@ -43,16 +363,16 @@ Release Notes
 ### Fixes
 * Fix README and features document format and grammar issues
 * Fix some potential memory leaks bugs
-* Fix history storage might not fallback correctly 
+* Fix history storage might not fallback correctly
 * Fix to make mathjax expression display in editor correctly (not italic)
-* Fix note title might have unstriped html tags 
+* Fix note title might have unstriped html tags
 * Fix client reconnect should resend last operation
 * Fix a bug when setting both maxAge and expires may cause user can't signin
 * Fix text complete extra tags for blockquote and referrals
 * Fix bug that when window close will make ajax fail and cause cookies set to wrong state
 * Fix markdown render might fall into regex infinite loop
-* Fix syntax error caused by element contain special characters 
-* Fix reference error caused by some scripts loading order 
+* Fix syntax error caused by element contain special characters
+* Fix reference error caused by some scripts loading order
 * Fix ToC id naming to avoid possible overlap with user ToC
 * Fix header nav bar rwd detect element should use div tag or it might glitch the layout
 * Fix textcomplete of extra tags for blockquote not match space character in the between
@@ -92,7 +412,7 @@ Release Notes
 ### Fixes
 * Workaround vim mode might overwrite copy keyMap on Windows
 * Fix TOC might not update after changeMode
-* Workaround slide mode gets glitch and blurry text on Firefox 47+ 
+* Workaround slide mode gets glitch and blurry text on Firefox 47+
 * Fix idle.js not change isAway property on onAway and onAwayBack events
 * Fix http body request entity too large issue
 * Fix google-diff-match-patch encodeURI exception issue
@@ -100,8 +420,8 @@ Release Notes
 * Fix spellcheck settings from cookies might not a boolean in string type
 * Fix cookies might not in boolean type cause page refresh loop
 * Fix the signin and logout redirect url might be empty
-* Fix realtime might not clear or remove invalid sockets in queue 
-* Fix slide not refresh layout on ajax item loaded 
+* Fix realtime might not clear or remove invalid sockets in queue
+* Fix slide not refresh layout on ajax item loaded
 * Fix retryOnDisconnect not clean up after reconnected
 * Fix some potential memory leaks
 
@@ -155,7 +475,7 @@ Release Notes
 * Support maintenance mode and gracefully exit process on signal
 * Update to update doc in db when doc in filesystem have newer modified time
 * Update to replace animation acceleration library from gsap to velocity
-* Support image syntax with size 
+* Support image syntax with size
 * Update textcomplete rules to support more conditions
 * Update to use bigger user profile image
 * Support showing signin button only when needed

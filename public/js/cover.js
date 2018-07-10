@@ -1,424 +1,430 @@
-require('./locale');
+/* eslint-env browser, jquery */
+/* global moment, serverurl */
 
-require('../css/cover.css');
-require('../css/site.css');
+require('./locale')
 
-var common = require('./common');
-var checkIfAuth = common.checkIfAuth;
-var urlpath = common.urlpath;
-var resetCheckAuth = common.resetCheckAuth;
-var getLoginState = common.getLoginState;
-var clearLoginState = common.clearLoginState;
+require('../css/cover.css')
+require('../css/site.css')
 
-var historyModule = require('./history');
-var parseStorageToHistory = historyModule.parseStorageToHistory;
-var parseHistory = historyModule.parseHistory;
-var getStorageHistory = historyModule.getStorageHistory;
-var getHistory = historyModule.getHistory;
-var saveHistory = historyModule.saveHistory;
-var removeHistory = historyModule.removeHistory;
-var postHistoryToServer = historyModule.postHistoryToServer;
-var deleteServerHistory = historyModule.deleteServerHistory;
-var parseServerToHistory = historyModule.parseServerToHistory;
-var saveStorageHistoryToServer = historyModule.saveStorageHistoryToServer;
-var clearDuplicatedHistory = historyModule.clearDuplicatedHistory;
+import {
+    checkIfAuth,
+    clearLoginState,
+    getLoginState,
+    resetCheckAuth,
+    setloginStateChangeEvent
+} from './lib/common/login'
 
-var saveAs = require('file-saver').saveAs;
-var List = require('list.js');
-var S = require('string');
+import {
+    clearDuplicatedHistory,
+    deleteServerHistory,
+    getHistory,
+    getStorageHistory,
+    parseHistory,
+    parseServerToHistory,
+    parseStorageToHistory,
+    postHistoryToServer,
+    removeHistory,
+    saveHistory,
+    saveStorageHistoryToServer
+} from './history'
 
-var options = {
-    valueNames: ['id', 'text', 'timestamp', 'fromNow', 'time', 'tags', 'pinned'],
-    item: '<li class="col-xs-12 col-sm-6 col-md-6 col-lg-4">\
-            <span class="id" style="display:none;"></span>\
-            <a href="#">\
-                <div class="item">\
-					<div class="ui-history-pin fa fa-thumb-tack fa-fw"></div>\
-                    <div class="ui-history-close fa fa-close fa-fw" data-toggle="modal" data-target=".delete-modal"></div>\
-                    <div class="content">\
-                        <h4 class="text"></h4>\
-                        <p>\
-                            <i><i class="fa fa-clock-o"></i> visited </i><i class="fromNow"></i>\
-                            <br>\
-                            <i class="timestamp" style="display:none;"></i>\
-                            <i class="time"></i>\
-                        </p>\
-                        <p class="tags"></p>\
-                    </div>\
-                </div>\
-            </a>\
-           </li>',
-    page: 18,
-    plugins: [
-        ListPagination({
-            outerWindow: 1
-        })
-    ]
-};
-var historyList = new List('history', options);
+import { saveAs } from 'file-saver'
+import List from 'list.js'
+import S from 'string'
 
-migrateHistoryFromTempCallback = pageInit;
-loginStateChangeEvent = pageInit;
-pageInit();
+const options = {
+  valueNames: ['id', 'text', 'timestamp', 'fromNow', 'time', 'tags', 'pinned'],
+  item: `<li class="col-xs-12 col-sm-6 col-md-6 col-lg-4">
+          <span class="id" style="display:none;"></span>
+          <a href="#">
+            <div class="item">
+              <div class="ui-history-pin fa fa-thumb-tack fa-fw"></div>
+              <div class="ui-history-close fa fa-close fa-fw" data-toggle="modal" data-target=".delete-history-modal"></div>
+              <div class="content">
+                <h4 class="text"></h4>
+                <p>
+                  <i><i class="fa fa-clock-o"></i> visited </i><i class="fromNow"></i>
+                  <br>
+                  <i class="timestamp" style="display:none;"></i>
+                  <i class="time"></i>
+                </p>
+                <p class="tags"></p>
+              </div>
+            </div>
+          </a>
+        </li>`,
+  page: 18,
+  pagination: [{
+    outerWindow: 1
+  }]
+}
+const historyList = new List('history', options)
 
-function pageInit() {
-    checkIfAuth(
-        function (data) {
-            $('.ui-signin').hide();
-            $('.ui-or').hide();
-            $('.ui-welcome').show();
-            if (data.photo) $('.ui-avatar').prop('src', data.photo).show();
-            else $('.ui-avatar').prop('src', '').hide();
-            $('.ui-name').html(data.name);
-            $('.ui-signout').show();
-            $(".ui-history").click();
-            parseServerToHistory(historyList, parseHistoryCallback);
+window.migrateHistoryFromTempCallback = pageInit
+setloginStateChangeEvent(pageInit)
+
+pageInit()
+
+function pageInit () {
+  checkIfAuth(
+        data => {
+          $('.ui-signin').hide()
+          $('.ui-or').hide()
+          $('.ui-welcome').show()
+          if (data.photo) $('.ui-avatar').prop('src', data.photo).show()
+          else $('.ui-avatar').prop('src', '').hide()
+          $('.ui-name').html(data.name)
+          $('.ui-signout').show()
+          $('.ui-history').click()
+          parseServerToHistory(historyList, parseHistoryCallback)
         },
-        function () {
-            $('.ui-signin').show();
-            $('.ui-or').show();
-            $('.ui-welcome').hide();
-            $('.ui-avatar').prop('src', '').hide();
-            $('.ui-name').html('');
-            $('.ui-signout').hide();
-            parseStorageToHistory(historyList, parseHistoryCallback);
+        () => {
+          $('.ui-signin').show()
+          $('.ui-or').show()
+          $('.ui-welcome').hide()
+          $('.ui-avatar').prop('src', '').hide()
+          $('.ui-name').html('')
+          $('.ui-signout').hide()
+          parseStorageToHistory(historyList, parseHistoryCallback)
         }
-    );
+    )
 }
 
-$(".masthead-nav li").click(function () {
-    $(this).siblings().removeClass("active");
-    $(this).addClass("active");
-});
+$('.masthead-nav li').click(function () {
+  $(this).siblings().removeClass('active')
+  $(this).addClass('active')
+})
 
-$(".ui-home").click(function () {
-    if (!$("#home").is(':visible')) {
-        $(".section:visible").hide();
-        $("#home").fadeIn();
-    }
-});
+// prevent empty link change hash
+$('a[href="#"]').click(function (e) {
+  e.preventDefault()
+})
 
-$(".ui-history").click(function () {
-    if (!$("#history").is(':visible')) {
-        $(".section:visible").hide();
-        $("#history").fadeIn();
-    }
-});
+$('.ui-home').click(function (e) {
+  if (!$('#home').is(':visible')) {
+    $('.section:visible').hide()
+    $('#home').fadeIn()
+  }
+})
 
-function checkHistoryList() {
-    if ($("#history-list").children().length > 0) {
-        $(".ui-nohistory").hide();
-        $(".ui-import-from-browser").hide();
-    } else if ($("#history-list").children().length == 0) {
-        $(".ui-nohistory").slideDown();
-        getStorageHistory(function (data) {
-            if (data && data.length > 0 && getLoginState() && historyList.items.length == 0) {
-                $(".ui-import-from-browser").slideDown();
-            }
-        });
-    }
+$('.ui-history').click(() => {
+  if (!$('#history').is(':visible')) {
+    $('.section:visible').hide()
+    $('#history').fadeIn()
+  }
+})
+
+function checkHistoryList () {
+  if ($('#history-list').children().length > 0) {
+    $('.pagination').show()
+    $('.ui-nohistory').hide()
+    $('.ui-import-from-browser').hide()
+  } else if ($('#history-list').children().length === 0) {
+    $('.pagination').hide()
+    $('.ui-nohistory').slideDown()
+    getStorageHistory(data => {
+      if (data && data.length > 0 && getLoginState() && historyList.items.length === 0) {
+        $('.ui-import-from-browser').slideDown()
+      }
+    })
+  }
 }
 
-function parseHistoryCallback(list, notehistory) {
-    checkHistoryList();
-	//sort by pinned then timestamp
-	list.sort('', {
-        sortFunction: function (a, b) {
-			var notea = a.values();
-            var noteb = b.values();
-			if (notea.pinned && !noteb.pinned) {
-                return -1;
-            } else if (!notea.pinned && noteb.pinned) {
-                return 1;
-            } else {
-				if (notea.timestamp > noteb.timestamp) {
-                	return -1;
-				} else if (notea.timestamp < noteb.timestamp) {
-					return 1;
-				} else {
-					return 0;
-				}
-			}
-		}
-	});
+function parseHistoryCallback (list, notehistory) {
+  checkHistoryList()
+    // sort by pinned then timestamp
+  list.sort('', {
+    sortFunction (a, b) {
+      const notea = a.values()
+      const noteb = b.values()
+      if (notea.pinned && !noteb.pinned) {
+        return -1
+      } else if (!notea.pinned && noteb.pinned) {
+        return 1
+      } else {
+        if (notea.timestamp > noteb.timestamp) {
+          return -1
+        } else if (notea.timestamp < noteb.timestamp) {
+          return 1
+        } else {
+          return 0
+        }
+      }
+    }
+  })
     // parse filter tags
-    var filtertags = [];
-    for (var i = 0, l = list.items.length; i < l; i++) {
-        var tags = list.items[i]._values.tags;
-        if (tags && tags.length > 0) {
-            for (var j = 0; j < tags.length; j++) {
-                //push info filtertags if not found
-                var found = false;
-                if (filtertags.indexOf(tags[j]) != -1)
-                    found = true;
-                if (!found)
-                    filtertags.push(tags[j]);
-            }
-        }
+  const filtertags = []
+  for (let i = 0, l = list.items.length; i < l; i++) {
+    const tags = list.items[i]._values.tags
+    if (tags && tags.length > 0) {
+      for (let j = 0; j < tags.length; j++) {
+                // push info filtertags if not found
+        let found = false
+        if (filtertags.includes(tags[j])) { found = true }
+        if (!found) { filtertags.push(tags[j]) }
+      }
     }
-    buildTagsFilter(filtertags);
+  }
+  buildTagsFilter(filtertags)
 }
 
 // update items whenever list updated
-historyList.on('updated', function (e) {
-    for (var i = 0, l = e.items.length; i < l; i++) {
-        var item = e.items[i];
-        if (item.visible()) {
-            var itemEl = $(item.elm);
-            var values = item._values;
-            var a = itemEl.find("a");
-            var pin = itemEl.find(".ui-history-pin");
-            var tagsEl = itemEl.find(".tags");
-            //parse link to element a
-            a.attr('href', serverurl + '/' + values.id);
-            //parse pinned
-            if (values.pinned) {
-                pin.addClass('active');
-            } else {
-                pin.removeClass('active');
-            }
-            //parse tags
-            var tags = values.tags;
-            if (tags && tags.length > 0 && tagsEl.children().length <= 0) {
-                var labels = [];
-                for (var j = 0; j < tags.length; j++) {
-                    //push into the item label
-                    labels.push("<span class='label label-default'>" + tags[j] + "</span>");
-                }
-                tagsEl.html(labels.join(' '));
-            }
+historyList.on('updated', e => {
+  for (let i = 0, l = e.items.length; i < l; i++) {
+    const item = e.items[i]
+    if (item.visible()) {
+      const itemEl = $(item.elm)
+      const values = item._values
+      const a = itemEl.find('a')
+      const pin = itemEl.find('.ui-history-pin')
+      const tagsEl = itemEl.find('.tags')
+            // parse link to element a
+      a.attr('href', `${serverurl}/${values.id}`)
+            // parse pinned
+      if (values.pinned) {
+        pin.addClass('active')
+      } else {
+        pin.removeClass('active')
+      }
+            // parse tags
+      const tags = values.tags
+      if (tags && tags.length > 0 && tagsEl.children().length <= 0) {
+        const labels = []
+        for (let j = 0; j < tags.length; j++) {
+                    // push into the item label
+          labels.push(`<span class='label label-default'>${tags[j]}</span>`)
         }
+        tagsEl.html(labels.join(' '))
+      }
     }
-    $(".ui-history-close").off('click');
-    $(".ui-history-close").on('click', historyCloseClick);
-    $(".ui-history-pin").off('click');
-    $(".ui-history-pin").on('click', historyPinClick);
-});
+  }
+  $('.ui-history-close').off('click')
+  $('.ui-history-close').on('click', historyCloseClick)
+  $('.ui-history-pin').off('click')
+  $('.ui-history-pin').on('click', historyPinClick)
+})
 
-function historyCloseClick(e) {
-    e.preventDefault();
-    var id = $(this).closest("a").siblings("span").html();
-    var value = historyList.get('id', id)[0]._values;
-    $('.ui-delete-modal-msg').text('Do you really want to delete below history?');
-    $('.ui-delete-modal-item').html('<i class="fa fa-file-text"></i> ' + value.text + '<br><i class="fa fa-clock-o"></i> ' + value.time);
-    clearHistory = false;
-    deleteId = id;
+function historyCloseClick (e) {
+  e.preventDefault()
+  const id = $(this).closest('a').siblings('span').html()
+  const value = historyList.get('id', id)[0]._values
+  $('.ui-delete-history-modal-msg').text('Do you really want to delete below history?')
+  $('.ui-delete-history-modal-item').html(`<i class="fa fa-file-text"></i> ${value.text}<br><i class="fa fa-clock-o"></i> ${value.time}`)
+  clearHistory = false
+  deleteId = id
 }
 
-function historyPinClick(e) {
-    e.preventDefault();
-    var $this = $(this);
-    var id = $this.closest("a").siblings("span").html();
-    var item = historyList.get('id', id)[0];
-    var values = item._values;
-    var pinned = values.pinned;
-    if (!values.pinned) {
-        pinned = true;
-        item._values.pinned = true;
-    } else {
-        pinned = false;
-        item._values.pinned = false;
-    }
-    checkIfAuth(function () {
-        postHistoryToServer(id, {
-            pinned: pinned
-        }, function (err, result) {
-            if (!err) {
-                if (pinned)
-                    $this.addClass('active');
-                else
-                    $this.removeClass('active');
-            }
-        });
-    }, function () {
-        getHistory(function (notehistory) {
-            for(var i = 0; i < notehistory.length; i++) {
-                if (notehistory[i].id == id) {
-                    notehistory[i].pinned = pinned;
-                    break;
-                }
-            }
-            saveHistory(notehistory);
-            if (pinned)
-                $this.addClass('active');
-            else
-                $this.removeClass('active');
-        });
-    });
+function historyPinClick (e) {
+  e.preventDefault()
+  const $this = $(this)
+  const id = $this.closest('a').siblings('span').html()
+  const item = historyList.get('id', id)[0]
+  const values = item._values
+  let pinned = values.pinned
+  if (!values.pinned) {
+    pinned = true
+    item._values.pinned = true
+  } else {
+    pinned = false
+    item._values.pinned = false
+  }
+  checkIfAuth(() => {
+    postHistoryToServer(id, {
+      pinned
+    }, (err, result) => {
+      if (!err) {
+        if (pinned) { $this.addClass('active') } else { $this.removeClass('active') }
+      }
+    })
+  }, () => {
+    getHistory(notehistory => {
+      for (let i = 0; i < notehistory.length; i++) {
+        if (notehistory[i].id === id) {
+          notehistory[i].pinned = pinned
+          break
+        }
+      }
+      saveHistory(notehistory)
+      if (pinned) { $this.addClass('active') } else { $this.removeClass('active') }
+    })
+  })
 }
 
-//auto update item fromNow every minutes
-setInterval(updateItemFromNow, 60000);
+// auto update item fromNow every minutes
+setInterval(updateItemFromNow, 60000)
 
-function updateItemFromNow() {
-    var items = $('.item').toArray();
-    for (var i = 0; i < items.length; i++) {
-        var item = $(items[i]);
-        var timestamp = parseInt(item.find('.timestamp').text());
-        item.find('.fromNow').text(moment(timestamp).fromNow());
-    }
+function updateItemFromNow () {
+  const items = $('.item').toArray()
+  for (let i = 0; i < items.length; i++) {
+    const item = $(items[i])
+    const timestamp = parseInt(item.find('.timestamp').text())
+    item.find('.fromNow').text(moment(timestamp).fromNow())
+  }
 }
 
-var clearHistory = false;
-var deleteId = null;
+var clearHistory = false
+var deleteId = null
 
-function deleteHistory() {
-    checkIfAuth(function () {
-        deleteServerHistory(deleteId, function (err, result) {
-            if (!err) {
-                if (clearHistory) {
-                    historyList.clear();
-                    checkHistoryList();
-                } else {
-                    historyList.remove('id', deleteId);
-                    checkHistoryList();
-                }
-            }
-            $('.delete-modal').modal('hide');
-            deleteId = null;
-            clearHistory = false;
-        });
-    }, function () {
+function deleteHistory () {
+  checkIfAuth(() => {
+    deleteServerHistory(deleteId, (err, result) => {
+      if (!err) {
         if (clearHistory) {
-            saveHistory([]);
-            historyList.clear();
-            checkHistoryList();
-            deleteId = null;
+          historyList.clear()
+          checkHistoryList()
         } else {
-            if (!deleteId) return;
-            getHistory(function (notehistory) {
-                var newnotehistory = removeHistory(deleteId, notehistory);
-                saveHistory(newnotehistory);
-                historyList.remove('id', deleteId);
-                checkHistoryList();
-                deleteId = null;
-            });
+          historyList.remove('id', deleteId)
+          checkHistoryList()
         }
-        $('.delete-modal').modal('hide');
-        clearHistory = false;
-    });
-}
-
-$(".ui-delete-modal-confirm").click(function () {
-    deleteHistory();
-});
-
-$(".ui-import-from-browser").click(function () {
-    saveStorageHistoryToServer(function () {
-        parseStorageToHistory(historyList, parseHistoryCallback);
-    });
-});
-
-$(".ui-save-history").click(function () {
-    getHistory(function (data) {
-        var history = JSON.stringify(data);
-        var blob = new Blob([history], {
-            type: "application/json;charset=utf-8"
-        });
-        saveAs(blob, 'hackmd_history_' + moment().format('YYYYMMDDHHmmss'));
-    });
-});
-
-$(".ui-open-history").bind("change", function (e) {
-    var files = e.target.files || e.dataTransfer.files;
-    var file = files[0];
-    var reader = new FileReader();
-    reader.onload = function () {
-        var notehistory = JSON.parse(reader.result);
-        //console.log(notehistory);
-        if (!reader.result) return;
-        getHistory(function (data) {
-            var mergedata = data.concat(notehistory);
-            mergedata = clearDuplicatedHistory(mergedata);
-            saveHistory(mergedata);
-            parseHistory(historyList, parseHistoryCallback);
-        });
-        $(".ui-open-history").replaceWith($(".ui-open-history").val('').clone(true));
-    };
-    reader.readAsText(file);
-});
-
-$(".ui-clear-history").click(function () {
-    $('.ui-delete-modal-msg').text('Do you really want to clear all history?');
-    $('.ui-delete-modal-item').html('There is no turning back.');
-    clearHistory = true;
-    deleteId = null;
-});
-
-$(".ui-refresh-history").click(function () {
-    var lastTags = $(".ui-use-tags").select2('val');
-    $(".ui-use-tags").select2('val', '');
-    historyList.filter();
-    var lastKeyword = $('.search').val();
-    $('.search').val('');
-    historyList.search();
-    $('#history-list').slideUp('fast');
-    $('.pagination').slideUp('fast');
-
-    resetCheckAuth();
-    historyList.clear();
-    parseHistory(historyList, function (list, notehistory) {
-        parseHistoryCallback(list, notehistory);
-        $(".ui-use-tags").select2('val', lastTags);
-        $(".ui-use-tags").trigger('change');
-        historyList.search(lastKeyword);
-        $('.search').val(lastKeyword);
-        checkHistoryList();
-        $('#history-list').slideDown('fast');
-        $('.pagination').slideDown('fast');
-    });
-});
-
-$(".ui-logout").click(function () {
-    clearLoginState();
-    location.href = serverurl + '/logout';
-});
-
-var filtertags = [];
-$(".ui-use-tags").select2({
-    placeholder: $(".ui-use-tags").attr('placeholder'),
-    multiple: true,
-    data: function () {
-        return {
-            results: filtertags
-        };
-    }
-});
-$('.select2-input').css('width', 'inherit');
-buildTagsFilter([]);
-
-function buildTagsFilter(tags) {
-    for (var i = 0; i < tags.length; i++)
-        tags[i] = {
-            id: i,
-            text: S(tags[i]).unescapeHTML().s
-        };
-    filtertags = tags;
-}
-$(".ui-use-tags").on('change', function () {
-    var tags = [];
-    var data = $(this).select2('data');
-    for (var i = 0; i < data.length; i++)
-        tags.push(data[i].text);
-    if (tags.length > 0) {
-        historyList.filter(function (item) {
-            var values = item.values();
-            if (!values.tags) return false;
-            var found = false;
-            for (var i = 0; i < tags.length; i++) {
-                if (values.tags.indexOf(tags[i]) != -1) {
-                    found = true;
-                    break;
-                }
-            }
-            return found;
-        });
+      }
+      $('.delete-history-modal').modal('hide')
+      deleteId = null
+      clearHistory = false
+    })
+  }, () => {
+    if (clearHistory) {
+      saveHistory([])
+      historyList.clear()
+      checkHistoryList()
+      deleteId = null
     } else {
-        historyList.filter();
+      if (!deleteId) return
+      getHistory(notehistory => {
+        const newnotehistory = removeHistory(deleteId, notehistory)
+        saveHistory(newnotehistory)
+        historyList.remove('id', deleteId)
+        checkHistoryList()
+        deleteId = null
+      })
     }
-    checkHistoryList();
-});
+    $('.delete-history-modal').modal('hide')
+    clearHistory = false
+  })
+}
 
-$('.search').keyup(function () {
-    checkHistoryList();
-});
+$('.ui-delete-history-modal-confirm').click(() => {
+  deleteHistory()
+})
+
+$('.ui-import-from-browser').click(() => {
+  saveStorageHistoryToServer(() => {
+    parseStorageToHistory(historyList, parseHistoryCallback)
+  })
+})
+
+$('.ui-save-history').click(() => {
+  getHistory(data => {
+    const history = JSON.stringify(data)
+    const blob = new Blob([history], {
+      type: 'application/json;charset=utf-8'
+    })
+    saveAs(blob, `codimd_history_${moment().format('YYYYMMDDHHmmss')}`, true)
+  })
+})
+
+$('.ui-open-history').bind('change', e => {
+  const files = e.target.files || e.dataTransfer.files
+  const file = files[0]
+  const reader = new FileReader()
+  reader.onload = () => {
+    const notehistory = JSON.parse(reader.result)
+        // console.log(notehistory);
+    if (!reader.result) return
+    getHistory(data => {
+      let mergedata = data.concat(notehistory)
+      mergedata = clearDuplicatedHistory(mergedata)
+      saveHistory(mergedata)
+      parseHistory(historyList, parseHistoryCallback)
+    })
+    $('.ui-open-history').replaceWith($('.ui-open-history').val('').clone(true))
+  }
+  reader.readAsText(file)
+})
+
+$('.ui-clear-history').click(() => {
+  $('.ui-delete-history-modal-msg').text('Do you really want to clear all history?')
+  $('.ui-delete-history-modal-item').html('There is no turning back.')
+  clearHistory = true
+  deleteId = null
+})
+
+$('.ui-refresh-history').click(() => {
+  const lastTags = $('.ui-use-tags').select2('val')
+  $('.ui-use-tags').select2('val', '')
+  historyList.filter()
+  const lastKeyword = $('.search').val()
+  $('.search').val('')
+  historyList.search()
+  $('#history-list').slideUp('fast')
+  $('.pagination').hide()
+
+  resetCheckAuth()
+  historyList.clear()
+  parseHistory(historyList, (list, notehistory) => {
+    parseHistoryCallback(list, notehistory)
+    $('.ui-use-tags').select2('val', lastTags)
+    $('.ui-use-tags').trigger('change')
+    historyList.search(lastKeyword)
+    $('.search').val(lastKeyword)
+    checkHistoryList()
+    $('#history-list').slideDown('fast')
+  })
+})
+
+$('.ui-delete-user-modal-cancel').click(() => {
+  $('.ui-delete-user').parent().removeClass('active')
+})
+
+$('.ui-logout').click(() => {
+  clearLoginState()
+  location.href = `${serverurl}/logout`
+})
+
+let filtertags = []
+$('.ui-use-tags').select2({
+  placeholder: $('.ui-use-tags').attr('placeholder'),
+  multiple: true,
+  data () {
+    return {
+      results: filtertags
+    }
+  }
+})
+$('.select2-input').css('width', 'inherit')
+buildTagsFilter([])
+
+function buildTagsFilter (tags) {
+  for (let i = 0; i < tags.length; i++) {
+    tags[i] = {
+      id: i,
+      text: S(tags[i]).unescapeHTML().s
+    }
+  }
+  filtertags = tags
+}
+$('.ui-use-tags').on('change', function () {
+  const tags = []
+  const data = $(this).select2('data')
+  for (let i = 0; i < data.length; i++) { tags.push(data[i].text) }
+  if (tags.length > 0) {
+    historyList.filter(item => {
+      const values = item.values()
+      if (!values.tags) return false
+      let found = false
+      for (let i = 0; i < tags.length; i++) {
+        if (values.tags.includes(tags[i])) {
+          found = true
+          break
+        }
+      }
+      return found
+    })
+  } else {
+    historyList.filter()
+  }
+  checkHistoryList()
+})
+
+$('.search').keyup(() => {
+  checkHistoryList()
+})

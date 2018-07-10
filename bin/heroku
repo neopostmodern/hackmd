@@ -3,8 +3,6 @@
 set -e
 
 if [ "$BUILD_ASSETS" = true ]; then
-  BUILD_ASSETS=false npm install && npm run assets:install
-
   # setup config files
   cat << EOF > .sequelizerc
 var path = require('path');
@@ -19,7 +17,7 @@ module.exports = {
 
 EOF
 
-  cat << EOF > config.json
+    cat << EOF > config.json
 
 {
   "production": {
@@ -27,8 +25,6 @@ EOF
 }
 
 EOF
-
-  cp public/js/config.js.example public/js/config.js
 
   # build app
   npm run build

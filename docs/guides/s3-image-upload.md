@@ -1,4 +1,6 @@
-# Guide - Setup HackMD S3 image upload
+# Guide - Setup CodiMD S3 image upload
+
+***Note:** This guide was written before the renaming. Just replace `HackMD` with `CodiMD` in your mind :smile: thanks!*
 
 1. Go to [AWS S3 console](https://console.aws.amazon.com/s3/home) and create a new bucket.
 
@@ -63,13 +65,13 @@
     {
         "production": {
             ...
-            "imageUploadType": "s3",
+            "imageuploadtype": "s3",
             "s3": {
                 "accessKeyId": "YOUR_S3_ACCESS_KEY_ID",
                 "secretAccessKey": "YOUR_S3_ACCESS_KEY",
-                "region": "YOUR_S3_REGION", // example: ap-northeast-1
-                "bucket": "YOUR_S3_BUCKET_NAME"
-            }
+                "region": "YOUR_S3_REGION" // example: ap-northeast-1
+            },
+            "s3bucket": "YOUR_S3_BUCKET_NAME"
         }
     }
     ```

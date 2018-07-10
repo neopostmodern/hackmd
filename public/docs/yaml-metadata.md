@@ -96,7 +96,7 @@ dir: rtl
 breaks
 ---
 This option means the hardbreaks in the note will be parsed or be ignore.
-The original markdown syntax breaks only if you put space twice, but HackMD choose to breaks every time you enter a break.
+The original markdown syntax breaks only if you put space twice, but CodiMD choose to breaks every time you enter a break.
 You can only use whether `true` or `false`.
 
 > default: not set (which will be true)
@@ -125,7 +125,7 @@ This option allow you to enable Disqus with your shortname.
 
 **Example**
 ```xml
-disqus: hackmd
+disqus: codimd
 ```
 
 slideOptions
@@ -133,6 +133,9 @@ slideOptions
 This option allow you provide custom options to slide mode.
 Please below document for more details:
 https://github.com/hakimel/reveal.js/#configuration
+
+You could also set slide theme which named in below css files:
+https://github.com/hakimel/reveal.js/tree/master/css/theme
 
 **Notice: always use two spaces as indention in YAML metadata!**
 
@@ -142,4 +145,5 @@ https://github.com/hakimel/reveal.js/#configuration
 ```xml
 slideOptions:
   transition: fade
+  theme: white
 ```
