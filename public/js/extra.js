@@ -459,34 +459,13 @@ export function finishView (view) {
     // speakerdeck
   view.find('div.speakerdeck.raw').removeClass('raw')
         .each((key, value) => {
-          const url = `https://speakerdeck.com/oembed.json?url=https%3A%2F%2Fspeakerdeck.com%2F${encodeURIComponent($(value).attr('data-speakerdeckid'))}`
-            // use yql because speakerdeck not support jsonp
-          $.ajax({
-            url: 'https://query.yahooapis.com/v1/public/yql',
-            data: {
-              q: `select * from json where url ='${url}'`,
-              format: 'json'
-            },
-            dataType: 'jsonp',
-            success (data) {
-              if (!data.query || !data.query.results) return
-              const json = data.query.results.json
-              const html = json.html
-              var ratio = json.height / json.width
-              $(value).html(html)
-              const iframe = $(value).children('iframe')
-              const src = iframe.attr('src')
-              if (src.indexOf('//') === 0) { iframe.attr('src', `https:${src}`) }
-              const inner = $('<div class="inner"></div>').append(iframe)
-              const height = iframe.attr('height')
-              const width = iframe.attr('width')
-              ratio = (height / width) * 100
-              inner.css('padding-bottom', `${ratio}%`)
-              $(value).html(inner)
-              if (window.viewAjaxCallback) window.viewAjaxCallback()
-            }
-          })
-        })
+          const url = `https://speakerdeck.com/${$(value).attr('data-speakerdeckid')}`
+          const inner = $('<a>Speakerdeck</a>')
+          inner.attr('href', url)
+          inner.attr('rel', 'noopener noreferrer')
+          inner.attr('target', '_blank')
+          $(value).append(inner)
+      })
     // pdf
   view.find('div.pdf.raw').removeClass('raw')
             .each(function (key, value) {
@@ -570,7 +549,9 @@ export function postProcess (code) {
     $(value).html(html)
   })
   // link should open in new window or tab
-  result.find('a:not([href^="#"]):not([target])').attr('target', '_blank')
+  // also add noopener to prevent clickjacking
+  // See details: https://mathiasbynens.github.io/rel-noopener/
+  result.find('a:not([href^="#"]):not([target])').attr('target', '_blank').attr('rel', 'noopener')
   // update continue line numbers
   const linenumberdivs = result.find('.gutter.linenumber').toArray()
   for (let i = 0; i < linenumberdivs.length; i++) {
@@ -832,7 +813,7 @@ const anchorForId = id => {
   const anchor = document.createElement('a')
   anchor.className = 'anchor hidden-xs'
   anchor.href = `#${id}`
-  anchor.innerHTML = '<span class="octicon octicon-link"></span>'
+  anchor.innerHTML = '<i class="fa fa-link"></i>'
   anchor.title = id
   return anchor
 }
@@ -844,11 +825,13 @@ const linkifyAnchors = (level, containingElement) => {
     let header = headers[i]
     if (header.getElementsByClassName('anchor').length === 0) {
       if (typeof header.id === 'undefined' || header.id === '') {
-                // to escape characters not allow in css and humanize
+        // to escape characters not allow in css and humanize
         const id = slugifyWithUTF8(getHeaderContent(header))
         header.id = id
       }
-      header.insertBefore(anchorForId(header.id), header.firstChild)
+      if (!(typeof header.id === 'undefined' || header.id === '')) {
+        header.insertBefore(anchorForId(header.id), header.firstChild)
+      }
     }
   }
 }
@@ -1143,6 +1126,19 @@ const pdfPlugin = new Plugin(
     }
 )
 
+const emojijsPlugin = new Plugin(
+    // regexp to match emoji shortcodes :something:
+    // We generate an universal regex that guaranteed only contains the
+    // emojies we have available. This should prevent all false-positives
+    new RegExp(':(' + window.emojify.emojiNames.map((item) => { return RegExp.escape(item) }).join('|') + '):', 'i'),
+
+    (match, utils) => {
+      const emoji = match[1].toLowerCase()
+      const div = $(`<img class="emoji" alt=":${emoji}:" src="${serverurl}/build/emojify.js/dist/images/basic/${emoji}.png"></img>`)
+      return div[0].outerHTML
+    }
+)
+
 // yaml meta, from https://github.com/eugeneware/remarkable-meta
 function get (state, line) {
   const pos = state.bMarks[line]
@@ -1187,6 +1183,7 @@ function metaPlugin (md) {
 }
 
 md.use(metaPlugin)
+md.use(emojijsPlugin)
 md.use(youtubePlugin)
 md.use(vimeoPlugin)
 md.use(gistPlugin)

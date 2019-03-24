@@ -1,7 +1,6 @@
 /* eslint-env browser, jquery */
-/* global CodeMirror, Cookies, moment, editor, ui, Spinner,
-   modeType, Idle, serverurl, key, gapi, Dropbox, FilePicker
-   ot, MediaUploader, hex2rgb, num_loaded, Visibility */
+/* global CodeMirror, Cookies, moment, Spinner, Idle, serverurl,
+   key, Dropbox, ot, hex2rgb, Visibility */
 
 require('../vendor/showup/showup')
 
@@ -12,11 +11,12 @@ require('../css/site.css')
 
 require('highlight.js/styles/github-gist.css')
 
-import toMarkdown from 'to-markdown'
+import TurndownService from 'turndown'
 
 import { saveAs } from 'file-saver'
 import randomColor from 'randomcolor'
 import store from 'store'
+import hljs from 'highlight.js'
 
 import _ from 'lodash'
 
@@ -92,7 +92,7 @@ var cursorMenuThrottle = 50
 var cursorActivityDebounce = 50
 var cursorAnimatePeriod = 100
 var supportContainers = ['success', 'info', 'warning', 'danger']
-var supportCodeModes = ['javascript', 'typescript', 'jsx', 'htmlmixed', 'htmlembedded', 'css', 'xml', 'clike', 'clojure', 'ruby', 'python', 'shell', 'php', 'sql', 'haskell', 'coffeescript', 'yaml', 'pug', 'lua', 'cmake', 'nginx', 'perl', 'sass', 'r', 'dockerfile', 'tiddlywiki', 'mediawiki', 'go', 'gherkin']
+var supportCodeModes = ['javascript', 'typescript', 'jsx', 'htmlmixed', 'htmlembedded', 'css', 'xml', 'clike', 'clojure', 'ruby', 'python', 'shell', 'php', 'sql', 'haskell', 'coffeescript', 'yaml', 'pug', 'lua', 'cmake', 'nginx', 'perl', 'sass', 'r', 'dockerfile', 'tiddlywiki', 'mediawiki', 'go', 'gherkin'].concat(hljs.listLanguages())
 var supportCharts = ['sequence', 'flow', 'graphviz', 'mermaid', 'abc']
 var supportHeaders = [
   {
@@ -1479,7 +1479,7 @@ $('#snippetExportModalConfirm').click(function () {
     file_name: $('#snippetExportModalFileName').val(),
     code: editor.getValue(),
     visibility_level: $('#snippetExportModalVisibility').val(),
-    visibility: $('#snippetExportModalVisibility').val() === 0 ? 'private' : ($('#snippetExportModalVisibility').val() === 10 ? 'internal' : '')
+    visibility: $('#snippetExportModalVisibility').val() === '0' ? 'private' : ($('#snippetExportModalVisibility').val() === '10' ? 'internal' : 'private')
   }
 
   if (!data.title || !data.file_name || !data.code || !data.visibility_level || !$('#snippetExportModalProjects').val()) return
@@ -1497,7 +1497,12 @@ $('#snippetExportModalConfirm').click(function () {
 })
 
 function parseToEditor (data) {
-  var parsed = toMarkdown(data)
+  var turndownService = new TurndownService({
+    defaultReplacement: function (innerHTML, node) {
+      return node.isBlock ? '\n\n' + node.outerHTML + '\n\n' : node.outerHTML
+    }
+  })
+  var parsed = turndownService.turndown(data)
   if (parsed) { replaceAll(parsed) }
 }
 
@@ -2510,7 +2515,9 @@ function buildCursor (user) {
 // editor actions
 function removeNullByte (cm, change) {
   var str = change.text.join('\n')
+  // eslint-disable-next-line no-control-regex
   if (/\u0000/g.test(str) && change.update) {
+    // eslint-disable-next-line no-control-regex
     change.update(change.from, change.to, str.replace(/\u0000/g, '').split('\n'))
   }
 }
@@ -2785,6 +2792,7 @@ function updateViewInner () {
   renderTOC(ui.area.markdown)
   generateToc('ui-toc')
   generateToc('ui-toc-affix')
+  autoLinkify(ui.area.markdown)
   generateScrollspy()
   updateScrollspy()
   smoothHashScroll()
@@ -3045,7 +3053,7 @@ function checkInCode () {
 function checkAbove (method) {
   var cursor = editor.getCursor()
   var text = []
-  for (var i = 0; i < cursor.line; i++) {  // contain current line
+  for (var i = 0; i < cursor.line; i++) { // contain current line
     text.push(editor.getLine(i))
   }
   text = text.join('\n') + '\n' + editor.getLine(cursor.line).slice(0, cursor.ch)

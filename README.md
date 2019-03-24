@@ -1,9 +1,6 @@
 CodiMD
 ===
 
-[![Standard - JavaScript Style Guide][standardjs-image]][standardjs-url]
-
-[![Join the chat at https://gitter.im/hackmdio/hackmd][gitter-image]][gitter-url]
 [![#CodiMD on matrix.org][matrix.org-image]][matrix.org-url]
 [![build status][travis-image]][travis-url]
 [![version][github-version-badge]][github-release-page]
@@ -68,9 +65,10 @@ Just to more confusion: We are still friends with HackMD :heart:
 
 ### Prerequisite
 
-- Node.js 6.x or up (test up to 7.5.0)
+- Node.js 6.x or up (test up to 7.5.0) and <10.x
 - Database (PostgreSQL, MySQL, MariaDB, SQLite, MSSQL) use charset `utf8`
 - npm (and its dependencies, especially [uWebSockets](https://github.com/uWebSockets/uWebSockets#nodejs-developers), [node-gyp](https://github.com/nodejs/node-gyp#installation))
+- `libssl-dev` for building scrypt (see [here](https://github.com/ml1nk/node-scrypt/blob/master/README.md#installation-instructions) for further information)
 - For **building** CodiMD we recommend to use a machine with at least **2GB** RAM
 
 ### Instructions
@@ -84,6 +82,8 @@ Just to more confusion: We are still friends with HackMD :heart:
    For example: `postgres://username:password@localhost:5432/codimd`
 7. Run `node_modules/.bin/sequelize db:migrate`, this step will migrate your db to the latest schema
 8. Run the server as you like (node, forever, pm2)
+
+To stay up to date with your installation it's recommended to join our [Matrix channel][matrix.org-url] or subscribe to the [release feed][github-release-feed].
 
 ## Heroku Deployment
 
@@ -142,6 +142,7 @@ If you are upgrading CodiMD from an older version, follow these steps:
 6. Run `node_modules/.bin/sequelize db:migrate`, this step will migrate your db to the latest schema
 7. Start your whole new server!
 
+To stay up to date with your installation it's recommended to join our [Matrix channel][matrix.org-url] or subscribe to the [release feed][github-release-feed].
 
 * **migrate-to-1.1.0**
 
@@ -174,11 +175,13 @@ There are some config settings you need to change in the files below.
 | --------- | ------ | ----------- |
 | `NODE_ENV`  | `production` or `development` | set current environment (will apply corresponding settings in the `config.json`) |
 | `DEBUG` | `true` or `false` | set debug mode; show more logs |
+| `CMD_CONFIG_FILE` | `/path/to/config.json` | optional override for the path to CodiMD's config file |
 | `CMD_DOMAIN` | `codimd.org` | domain name |
 | `CMD_URL_PATH` | `codimd` | sub URL path, like `www.example.com/<URL_PATH>` |
 | `CMD_HOST` | `localhost` | host to listen on |
 | `CMD_PORT` | `80` | web app port |
 | `CMD_PATH` | `/var/run/codimd.sock` | path to UNIX domain socket to listen on (if specified, `CMD_HOST` and `CMD_PORT` are ignored) |
+| `CMD_LOGLEVEL` | `info` | Defines what kind of logs are provided to stdout. |
 | `CMD_ALLOW_ORIGIN` | `localhost, codimd.org` | domain name whitelist (use comma to separate) |
 | `CMD_PROTOCOL_USESSL` | `true` or `false` | set to use SSL protocol for resources path (only applied when domain is set) |
 | `CMD_URL_ADDPORT` | `true` or `false` | set to add port on callback URL (ports `80` or `443` won't be applied) (only applied when domain is set) |
@@ -186,6 +189,7 @@ There are some config settings you need to change in the files below.
 | `CMD_ALLOW_ANONYMOUS` | `true` or `false` | set to allow anonymous usage (default is `true`) |
 | `CMD_ALLOW_ANONYMOUS_EDITS` | `true` or `false` | if `allowAnonymous` is `true`, allow users to select `freely` permission, allowing guests to edit existing notes (default is `false`) |
 | `CMD_ALLOW_FREEURL` | `true` or `false` | set to allow new note creation by accessing a nonexistent note URL |
+| `CMD_FORBIDDEN_NODE_IDS` | `'robots.txt'` | disallow creation of notes, even if `CMD_ALLOW_FREEURL` is `true` |
 | `CMD_DEFAULT_PERMISSION` | `freely`, `editable`, `limited`, `locked` or `private` | set notes default permission (only applied on signed users) |
 | `CMD_DB_URL` | `mysql://localhost:3306/database` | set the database URL |
 | `CMD_SESSION_SECRET` | no example | Secret used to sign the session cookie. If non is set, one will randomly generated on startup |
@@ -218,7 +222,7 @@ There are some config settings you need to change in the files below.
 | `CMD_LDAP_USERNAMEFIELD` | Fallback to userid | The LDAP field which is used as the username on CodiMD |
 | `CMD_LDAP_TLS_CA` | `server-cert.pem, root.pem` | Root CA for LDAP TLS in PEM format (use comma to separate) |
 | `CMD_LDAP_PROVIDERNAME` | `My institution` | Optional name to be displayed at login form indicating the LDAP provider |
-| `CMD_SAML_IDPSSOURL` | `https://idp.example.com/sso` | authentication endpoint of IdP. for details, see [guide](docs/guides/auth.md#saml-onelogin). |
+| `CMD_SAML_IDPSSOURL` | `https://idp.example.com/sso` | authentication endpoint of IdP. for details, see [guide](docs/guides/auth/saml-onelogin.md). |
 | `CMD_SAML_IDPCERT` | `/path/to/cert.pem` | certificate file path of IdP in PEM format |
 | `CMD_SAML_ISSUER` | no example | identity of the service provider (optional, default: serverurl)" |
 | `CMD_SAML_IDENTIFIERFORMAT` | no example | name identifier format (optional, default: `urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress`) |
@@ -228,6 +232,15 @@ There are some config settings you need to change in the files below.
 | `CMD_SAML_ATTRIBUTE_ID` | `sAMAccountName` | attribute map for `id` (optional, default: NameID of SAML response) |
 | `CMD_SAML_ATTRIBUTE_USERNAME` | `mailNickname` | attribute map for `username` (optional, default: NameID of SAML response) |
 | `CMD_SAML_ATTRIBUTE_EMAIL` | `mail` | attribute map for `email` (optional, default: NameID of SAML response if `CMD_SAML_IDENTIFIERFORMAT` is default) |
+| `CMD_OAUTH2_USER_PROFILE_URL` | `https://example.com` | where retrieve information about a user after succesful login. Needs to output JSON. (no default value) Refer to the [Mattermost](docs/guides/auth/mattermost-self-hosted.md) or [Nextcloud](docs/guides/auth/nextcloud.md) examples for more details on all of the `CMD_OAUTH2...` options. |
+| `CMD_OAUTH2_USER_PROFILE_USERNAME_ATTR` | `name` | where to find the username in the JSON from the user profile URL. (no default value)|
+| `CMD_OAUTH2_USER_PROFILE_DISPLAY_NAME_ATTR` | `display-name` | where to find the display-name in the JSON from the user profile URL. (no default value) |
+| `CMD_OAUTH2_USER_PROFILE_EMAIL_ATTR` | `email` | where to find the email address in the JSON from the user profile URL. (no default value) |
+| `CMD_OAUTH2_TOKEN_URL` | `https://example.com` | sometimes called token endpoint, please refer to the documentation of your OAuth2 provider (no default value) |
+| `CMD_OAUTH2_AUTHORIZATION_URL` | `https://example.com` | authorization URL of your provider, please refer to the documentation of your OAuth2 provider (no default value) |
+| `CMD_OAUTH2_CLIENT_ID` | `afae02fckafd...` | you will get this from your OAuth2 provider when you register CodiMD as OAuth2-client, (no default value) |
+| `CMD_OAUTH2_CLIENT_SECRET` | `afae02fckafd...` | you will get this from your OAuth2 provider when you register CodiMD as OAuth2-client, (no default value) |
+| `CMD_OAUTH2_PROVIDERNAME` | `My institution` | Optional name to be displayed at login form indicating the oAuth2 provider |
 | `CMD_IMGUR_CLIENTID` | no example | Imgur API client id |
 | `CMD_EMAIL` | `true` or `false` | set to allow email signin |
 | `CMD_ALLOW_PDF_EXPORT` | `true` or `false` | Enable or disable PDF exports |
@@ -251,6 +264,7 @@ There are some config settings you need to change in the files below.
 | `CMD_HSTS_PRELOAD` | `true` | whether to allow preloading of the site's HSTS status (e.g. into browsers) |
 | `CMD_CSP_ENABLE` | `true` | whether to enable Content Security Policy (directives cannot be configured with environment variables) |
 | `CMD_CSP_REPORTURI` | `https://<someid>.report-uri.com/r/d/csp/enforce` | Allows to add a URL for CSP reports in case of violations |
+| `CMD_SOURCE_URL` | `https://github.com/hackmdio/codimd/tree/<current commit>` | Provides the link to the source code of CodiMD on the entry page (Please, make sure you change this when you run a modified version) |
 
 ***Note:** Due to the rename process we renamed all `HMD_`-prefix variables to be `CMD_`-prefixed. The old ones continue to work.*
 
@@ -264,6 +278,7 @@ There are some config settings you need to change in the files below.
 | `host` | `localhost` | host to listen on |
 | `port` | `80` | web app port |
 | `path` | `/var/run/codimd.sock` | path to UNIX domain socket to listen on (if specified, `host` and `port` are ignored) |
+| `loglevel` | `info` | Defines what kind of logs are provided to stdout. |
 | `allowOrigin` | `['localhost']` | domain name whitelist |
 | `useSSL` | `true` or `false` | set to use SSL server (if `true`, will auto turn on `protocolUseSSL`) |
 | `hsts` | `{"enable": true, "maxAgeSeconds": 31536000, "includeSubdomains": true, "preload": true}` | [HSTS](https://en.wikipedia.org/wiki/HTTP_Strict_Transport_Security) options to use with HTTPS (default is the example value, max age is a year) |
@@ -274,22 +289,19 @@ There are some config settings you need to change in the files below.
 | `allowAnonymous` | `true` or `false` | set to allow anonymous usage (default is `true`) |
 | `allowAnonymousEdits` | `true` or `false` | if `allowAnonymous` is `true`: allow users to select `freely` permission, allowing guests to edit existing notes (default is `false`) |
 | `allowFreeURL` | `true` or `false` | set to allow new note creation by accessing a nonexistent note URL |
+| `forbiddenNoteIDs` | `['robots.txt']` | disallow creation of notes, even if `allowFreeUrl` is `true` |
 | `defaultPermission` | `freely`, `editable`, `limited`, `locked`, `protected` or `private` | set notes default permission (only applied on signed users) |
 | `dbURL` | `mysql://localhost:3306/database` | set the db URL; if set, then db config (below) won't be applied |
 | `db` | `{ "dialect": "sqlite", "storage": "./db.codimd.sqlite" }` | set the db configs, [see more here](http://sequelize.readthedocs.org/en/latest/api/sequelize/) |
-| `sslKeyPath` | `./cert/client.key` | SSL key path (only need when you set `useSSL`) |
-| `sslCertPath` | `./cert/codimd_io.crt` | SSL cert path (only need when you set `useSSL`) |
-| `sslCAPath` | `['./cert/COMODORSAAddTrustCA.crt']` | SSL ca chain (only need when you set `useSSL`) |
-| `dhParamPath` | `./cert/dhparam.pem` | SSL dhparam path (only need when you set `useSSL`) |
-| `tmpPath` | `./tmp/` | temp directory path |
-| `defaultNotePath` | `./public/default.md` | default note file path |
-| `docsPath` | `./public/docs` | docs directory path |
-| `indexPath` | `./public/views/index.ejs` | index template file path |
-| `hackmdPath` | `./public/views/hackmd.ejs` | hackmd template file path |
-| `errorPath` | `./public/views/error.ejs` | error template file path |
-| `prettyPath` | `./public/views/pretty.ejs` | pretty template file path |
-| `slidePath` | `./public/views/slide.hbs` | slide template file path |
-| `uploadsPath` | `./public/uploads` | uploads directory - needs to be persistent when you use imageUploadType `filesystem` |
+| `sslKeyPath` | `./cert/client.key` | SSL key path<sup>1</sup> (only need when you set `useSSL`) |
+| `sslCertPath` | `./cert/codimd_io.crt` | SSL cert path<sup>1</sup> (only need when you set `useSSL`) |
+| `sslCAPath` | `['./cert/COMODORSAAddTrustCA.crt']` | SSL ca chain<sup>1</sup> (only need when you set `useSSL`) |
+| `dhParamPath` | `./cert/dhparam.pem` | SSL dhparam path<sup>1</sup> (only need when you set `useSSL`) |
+| `tmpPath` | `./tmp/` | temp directory path<sup>1</sup> |
+| `defaultNotePath` | `./public/default.md` | default note file path<sup>1</sup> |
+| `docsPath` | `./public/docs` | docs directory path<sup>1</sup> |
+| `viewPath` | `./public/views` | template directory path<sup>1</sup> |
+| `uploadsPath` | `./public/uploads` | uploads directory<sup>1</sup> - needs to be persistent when you use imageUploadType `filesystem` |
 | `sessionName` | `connect.sid` | cookie session name |
 | `sessionSecret` | `secret` | cookie session secret |
 | `sessionLife` | `14 * 24 * 60 * 60 * 1000` | cookie session life |
@@ -298,12 +310,16 @@ There are some config settings you need to change in the files below.
 | `heartbeatTimeout` | `10000` | socket.io heartbeat timeout |
 | `documentMaxLength` | `100000` | note max length |
 | `email` | `true` or `false` | set to allow email signin |
+| `oauth2` | `{baseURL: ..., userProfileURL: ..., userProfileUsernameAttr: ..., userProfileDisplayNameAttr: ..., userProfileEmailAttr: ..., tokenURL: ..., authorizationURL: ..., clientID: ..., clientSecret: ...}` | An object detailing your OAuth2 provider. Refer to the [Mattermost](docs/guides/auth/mattermost-self-hosted.md) or [Nextcloud](docs/guides/auth/nextcloud.md) examples for more details!|
 | `allowEmailRegister`  | `true` or `false` | set to allow email register (only applied when email is set, default is `true`. Note `bin/manage_users` might help you if registration is `false`.) |
 | `allowGravatar` | `true` or `false` | set to `false` to disable gravatar as profile picture source on your instance |
 | `imageUploadType` | `imgur`, `s3`, `minio`, `azure` or `filesystem`(default) | Where to upload images. For S3, see our Image Upload Guides for [S3](docs/guides/s3-image-upload.md) or [Minio](docs/guides/minio-image-upload.md)|
 | `minio` | `{ "accessKey": "YOUR_MINIO_ACCESS_KEY", "secretKey": "YOUR_MINIO_SECRET_KEY", "endpoint": "YOUR_MINIO_HOST", port: 9000, secure: true }` | When `imageUploadType` is set to `minio`, you need to set this key. Also checkout our [Minio Image Upload Guide](docs/guides/minio-image-upload.md) |
 | `s3` | `{ "accessKeyId": "YOUR_S3_ACCESS_KEY_ID", "secretAccessKey": "YOUR_S3_ACCESS_KEY", "region": "YOUR_S3_REGION" }` | When `imageuploadtype` be set to `s3`, you would also need to setup this key, check our [S3 Image Upload Guide](docs/guides/s3-image-upload.md) |
 | `s3bucket` | `YOUR_S3_BUCKET_NAME` | bucket name when `imageUploadType` is set to `s3` or `minio` |
+| `sourceURL` | `https://github.com/hackmdio/codimd/tree/<current commit>` | Provides the link to the source code of CodiMD on the entry page (Please, make sure you change this when you run a modified version) |
+
+<sup>1</sup>: relative paths are based on CodiMD's base directory
 
 ## Third-party integration API key settings
 
@@ -355,15 +371,12 @@ See more at [http://operational-transformation.github.io/](http://operational-tr
 
 **License under AGPL.**
 
-[gitter-image]: https://badges.gitter.im/Join%20Chat.svg
-[gitter-url]: https://gitter.im/hackmdio/hackmd?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
 [matrix.org-image]: https://img.shields.io/badge/Matrix.org-%23CodiMD@matrix.org-green.svg
 [matrix.org-url]: https://riot.im/app/#/room/#codimd:matrix.org
 [travis-image]: https://travis-ci.org/hackmdio/codimd.svg?branch=master
 [travis-url]: https://travis-ci.org/hackmdio/codimd
 [github-version-badge]: https://img.shields.io/github/release/hackmdio/codimd.svg
 [github-release-page]: https://github.com/hackmdio/codimd/releases
-[standardjs-image]: https://cdn.rawgit.com/feross/standard/master/badge.svg
-[standardjs-url]: https://github.com/feross/standard
+[github-release-feed]: https://github.com/hackmdio/codimd/releases.atom
 [poeditor-image]: https://img.shields.io/badge/POEditor-translate-blue.svg
 [poeditor-url]: https://poeditor.com/join/project/1OpGjF2Jir
